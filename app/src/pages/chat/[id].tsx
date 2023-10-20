@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flex, Input, Button, Text, useToast, LinkBox, LinkOverlay, Box, HStack, VStack, Avatar, IconButton } from '@chakra-ui/react';
+import { Flex, Input, Button, Text, useToast, LinkBox, LinkOverlay, Box, HStack, VStack, Avatar, IconButton, Divider, useDisclosure } from '@chakra-ui/react';
 import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import { useAnchorWallet } from '@solana/wallet-adapter-react';
 import { useRouter } from 'next/router';
@@ -11,6 +11,8 @@ import { anchorProgram } from '@/util/helper';
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes';
 import { fetchChatUserAccount } from '@/util/program/fetchChatUserAccount';
 import { sendMessage } from '@/util/program/sendMessage';
+import { joinRoom } from '@/util/program/joinRoom';
+import { CreateUserModal } from '@/components/CreateUserModal';
 
 const ChatRoom: React.FC = () => {
   const wallet = useAnchorWallet();
@@ -22,7 +24,7 @@ const ChatRoom: React.FC = () => {
   const toast = useToast()
   const router = useRouter()
   const [newMessage, setNewMessage] = useState<string>("")
-
+  const {isOpen, onOpen, onClose} = useDisclosure()
   const { id } = router.query
 
   const handleSendMessage = async () => {
@@ -70,32 +72,48 @@ const ChatRoom: React.FC = () => {
       }
 
       const chatUser = await fetchChatUserAccount(wallet as NodeWallet);
-      const details = chatUser.accounts[2].account;
+      console.log(chatUser)
+      if (chatUser.error || !chatUser.accounts || !chatUser.accounts.length) {
+        return
+      }
+      const details = chatUser.accounts[0].account;
       console.log(details);
       setChatUser(details);
     };
 
-    // Fetch data initially
     fetchData();
 
-    // Set up an interval to fetch data every 1 second
     const interval = setInterval(fetchData, 1000);
 
-    // Clean up the interval on unmount
     return () => clearInterval(interval);
   }, [wallet]);
 
+
+  const handleJoin = async () => {
+    if (!chatUser) {
+      toast({
+        status:"error",
+        title:"First create chat user and try again"
+      })
+      onOpen()
+      return
+    }
+    const res = await joinRoom(wallet as NodeWallet, Number(id), chatUser.id)
+    console.log(res)
+  }
   return (
 
     <>
       <Navbar />
-      <Flex bg="#232735" h="95vh" overflow="hidden" w="100%" align="center" justify="center">
+      <CreateUserModal isOpen={isOpen} onClose={onClose} />
+
+      <Flex bg="#232735" h="95vh" gap="3rem" overflow="hidden" w="100%" align="center" justify="center">
         <Flex w="500px" h="700px" borderWidth="1px" flexFlow="column" justify="space-between" borderRadius="lg" overflow="scroll">
           <Flex direction="column" p={4} flex="1" overflowY="auto">
-            {chatUser && chats && chats.map((message: any, index: number) => (
+            {chats && chats.map((message: any, index: number) => (
               <>
-                <Flex justify={message.username === chatUser.name ? "end" : "start"} padding="0 10px" key={index} align="flex-start" mb={1}>
-                  <VStack align={message.username === chatUser.name ? "end" : "start"} spacing={0} padding="0 1rem" bg={message.username === chatUser.name ? "#435eae" : "#3a435e"} rounded="5px">
+                <Flex justify={chatUser && message.username === chatUser.name ? "end" : "start"} padding="0 10px" key={index} align="flex-start" mb={1}>
+                  <VStack align={chatUser && message.username === chatUser.name ? "end" : "start"} spacing={0} padding="0 1rem" bg={chatUser && message.username === chatUser.name ? "#435eae" : "#3a435e"} rounded="5px">
 
                     <Text fontSize="1.4rem" color="white" fontWeight="bold" textAlign="end">
                       {message.username}
@@ -104,12 +122,13 @@ const ChatRoom: React.FC = () => {
                     <Text color="gray.200" mt="-4px !important" fontSize="1.2rem">{message.message}</Text>
                   </VStack>
                 </Flex>
-                <Text color="gray.500" textAlign={message.username === chatUser.name ? "end" : "start"}>{new Date(message.date).toLocaleTimeString()}</Text>
+                <Text color="gray.500" textAlign={chatUser && message.username === chatUser.name ? "end" : "start"}>{new Date(message.date).toLocaleTimeString()}</Text>
               </>))}
           </Flex>
           <HStack p={2} bg="gray.600">
             <Input
               color='white'
+              disabled={wallet ? creator != wallet.publicKey && !guests.includes(wallet?.publicKey.toBase58()) : true}
               fontSize="1.2rem"
               placeholder="Type your message..."
               value={newMessage}
@@ -125,18 +144,27 @@ const ChatRoom: React.FC = () => {
           </HStack>
         </Flex>
 
-        <Flex justify="space-between" align="center" mb={4}>
-          <VStack align="flex-start">
-            <Text fontWeight="bold">Creator</Text>
-            <Avatar name={creator} size="sm" />
-          </VStack>
+        <Flex padding="0.5rem 0.5rem" justify="space-between" flexFlow="column" align="center" bg="#424e64" rounded="5px">
 
-          <VStack align="flex-start">
-            <Text fontWeight="bold">Guests</Text>
-            {guests.map((guest) => (
-              <Avatar key={guest} name={guest} size="sm" />
-            ))}
-          </VStack>
+          <Flex flexFlow="column" align="start" justify="start">
+            <Text fontWeight="bold" color="white" fontSize="1.3rem">Creator</Text>
+            <Text fontSize="1.2rem" color="gray.200">{creator}</Text>
+
+            <Divider />
+
+            <Text fontWeight="bold" textAlign="start" color="white" fontSize="1.3rem">Guests</Text>
+            {guests && guests.length ? guests.map((g) =>
+              <Text key={g} fontSize="1.2rem" color="gray.200">{g}</Text>) :
+              <Text fontSize="1.1rem" color="gray.200">No guests here</Text>
+            }
+
+          </Flex>
+
+
+   
+            {wallet && creator != wallet.publicKey &&  !guests.includes(wallet?.publicKey.toBase58()) ? <Button colorScheme="telegram" w="100%" fontSize="1.3rem" onClick={handleJoin}>Join Chat Room</Button> : null}
+
+
         </Flex>
       </Flex>
     </>

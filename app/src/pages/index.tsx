@@ -85,7 +85,6 @@ export default function Home() {
               }
               const lastMessage = chatMessages[chatMessages.length - 1];
               const date = new Date(lastMessage.date);
-              const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
               return (
                 <HStack key={chat.id} justify="space-between" border="1px solid" borderColor="#2e2c3a" w="50rem" h="6rem" padding="5px 10px" rounded="5px">
                   <Avatar size="md" src={`avatar-url-here`} />
@@ -93,7 +92,7 @@ export default function Home() {
                     <Text fontSize="1.4rem" color="gray.200" fontWeight="bold">{lastMessage.username}</Text>
                     <Text fontSize="1.2rem" color="gray.500">{lastMessage.message}</Text>
                   </Box>
-                  <Text fontSize="1.2rem" color="gray.400">{time}</Text>
+                  <Text fontSize="1.2rem" color="gray.400">{date.toLocaleString()}</Text>
                   <Button size="sm" fontSize="1.2rem" padding="1.3rem 1.5rem" colorScheme="telegram">Join</Button>
                 </HStack>
               );
