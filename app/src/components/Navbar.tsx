@@ -5,7 +5,7 @@ const Wallets = dynamic(() => import("../components/WalletButton"), { ssr: false
 
 export const Navbar = () => {
   return (
-    <Flex zIndex="10" bg="#0B0F1C" h="1rem" w="100%" justify="space-between" align="center" p="9">
+    <Flex zIndex="10" bg="#2f3548" h="1rem" w="100%" justify="space-between" align="center" p="9">
 
       <Link href="/">
         <LinkBox fontSize="1.2rem" color="blue.400" fontWeight={600} borderRadius="1rem">Solana Linktree</LinkBox>

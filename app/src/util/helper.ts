@@ -40,3 +40,8 @@ export const anchorProgram = (wallet: anchor.Wallet, network?: string) => {
 
   return program;
 };
+
+export const formatTime = (date: string) => {
+  const timestamp = new Date(date);
+  return `${timestamp.getHours()}:${String(timestamp.getMinutes()).padStart(2, '0')}`;
+}
