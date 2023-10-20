@@ -5,7 +5,8 @@ export const sendMessage = async (
   wallet: anchor.Wallet,
   chatroomId: number,
   chatUserId: number,
-  message: string
+  message: string,
+  name: string,
 ) => {
   const program = anchorProgram(wallet);
 
@@ -23,14 +24,14 @@ export const sendMessage = async (
   try {
     // @ts-ignore
     const chatAccount = await program.account.chatroom.fetch(
-        chatroomAccount
-      );
+      chatroomAccount
+    );
 
     let history = JSON.parse(chatAccount.chats);
-    history.push({ username: chatAccount.name, date: new Date(), message });
-  
+    history.push({ username: name, date: new Date(), message });
+
     const sig = await program.methods
-      .sendMessage(chatroomId, chatUserId, history)
+      .sendMessage(chatroomId, chatUserId, JSON.stringify(history))
       .accounts({
         chatroom: chatroomAccount,
         chatUser: chatUserAccount,

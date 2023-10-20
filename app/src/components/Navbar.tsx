@@ -8,7 +8,7 @@ export const Navbar = () => {
     <Flex zIndex="10" bg="#2f3548" h="1rem" w="100%" justify="space-between" align="center" p="9">
 
       <Link href="/">
-        <LinkBox fontSize="1.2rem" color="blue.400" fontWeight={600} borderRadius="1rem">Solana Linktree</LinkBox>
+        <LinkBox fontSize="1.2rem" color="blue.400" fontWeight={600} borderRadius="1rem">Solana Chat</LinkBox>
       </Link>
       <Wallets />
     </Flex>
