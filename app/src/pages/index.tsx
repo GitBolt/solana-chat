@@ -9,6 +9,7 @@ import { formatTime } from '@/util/helper'
 import { fetchChatUserAccount } from '@/util/program/fetchChatUserAccount'
 import { CreateUserModal } from '@/components/CreateUserModal'
 import { createChatroom } from '@/util/program/createChatroom'
+import { joinRoom } from '@/util/program/joinRoom'
 
 
 export default function Home() {
@@ -33,6 +34,10 @@ export default function Home() {
   }, [])
 
 
+  const handleView = async (id: number) => {
+    router.push(`/chat/${id}`)
+  }
+
   const handleCreateRoom = async () => {
     const chatAccount = await fetchChatUserAccount(wallet as NodeWallet)
     if (chatAccount.error) {
@@ -45,19 +50,19 @@ export default function Home() {
     console.log(res)
     if (res.error) {
       toast({
-        status:"error",
+        status: "error",
         title: res.error.toString()
       })
       return
     }
 
     toast({
-      status:"success",
-      title:"Created a new chat room!",
+      status: "success",
+      title: "Created a new chat room!",
     })
 
     router.push(`/chat/${id}`)
-  } 
+  }
   return (
     <>
 
@@ -86,14 +91,14 @@ export default function Home() {
               const lastMessage = chatMessages[chatMessages.length - 1];
               const date = new Date(lastMessage.date);
               return (
-                <HStack key={chat.id} justify="space-between" border="1px solid" borderColor="#2e2c3a" w="50rem" h="6rem" padding="5px 10px" rounded="5px">
+                <HStack _hover={{bg:"#364059"}} key={chat.id} justify="space-between" border="1px solid" borderColor="#2e2c3a" w="50rem" h="6rem" padding="5px 10px" rounded="5px">
                   <Avatar size="md" src={`avatar-url-here`} />
                   <Box flex="1">
                     <Text fontSize="1.4rem" color="gray.200" fontWeight="bold">{lastMessage.username}</Text>
                     <Text fontSize="1.2rem" color="gray.500">{lastMessage.message}</Text>
                   </Box>
                   <Text fontSize="1.2rem" color="gray.400">{date.toLocaleString()}</Text>
-                  <Button size="sm" fontSize="1.2rem" padding="1.3rem 1.5rem" colorScheme="telegram">Join</Button>
+                  <Button size="sm" fontSize="1.2rem" padding="1.3rem 1.5rem" colorScheme="telegram" onClick={() => handleView(chat.id)}>Open</Button>
                 </HStack>
               );
             })}
@@ -104,7 +109,7 @@ export default function Home() {
             <Text fontSize="1.3rem" color="gray.200">No Chat Rooms</Text>
             <Button colorScheme="green" w="100%" marginTop="1.2rem !important" h="3rem" fontSize="1.2rem" alignSelf="center" onClick={handleCreateRoom}>Create Your Own</Button>
 
-            </VStack>}
+          </VStack>}
       </Flex>
 
 

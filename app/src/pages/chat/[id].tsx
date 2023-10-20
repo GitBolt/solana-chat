@@ -24,7 +24,7 @@ const ChatRoom: React.FC = () => {
   const toast = useToast()
   const router = useRouter()
   const [newMessage, setNewMessage] = useState<string>("")
-  const {isOpen, onOpen, onClose} = useDisclosure()
+  const { isOpen, onOpen, onClose } = useDisclosure()
   const { id } = router.query
 
   const handleSendMessage = async () => {
@@ -92,8 +92,8 @@ const ChatRoom: React.FC = () => {
   const handleJoin = async () => {
     if (!chatUser) {
       toast({
-        status:"error",
-        title:"First create chat user and try again"
+        status: "error",
+        title: "First create chat user and try again"
       })
       onOpen()
       return
@@ -144,29 +144,41 @@ const ChatRoom: React.FC = () => {
           </HStack>
         </Flex>
 
-        <Flex padding="0.5rem 0.5rem" justify="space-between" flexFlow="column" align="center" bg="#424e64" rounded="5px">
+        <Flex maxWidth="300px" overflow="hidden" display="block" padding="0.5rem 0.5rem" justify="space-between" flexFlow="column" align="start" bg="#424e64" rounded="5px">
 
           <Flex flexFlow="column" align="start" justify="start">
-            <Text fontWeight="bold" color="white" fontSize="1.3rem">Creator</Text>
-            <Text fontSize="1.2rem" color="gray.200">{creator}</Text>
+            <Text fontWeight="bold" color="white" fontSize="1.3rem" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxWidth="100%">
+              Creator
+            </Text>
+            <Text fontSize="1.2rem" color="gray.200" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxWidth="100%">
+              {creator}
+            </Text>
 
             <Divider />
 
-            <Text fontWeight="bold" textAlign="start" color="white" fontSize="1.3rem">Guests</Text>
-            {guests && guests.length ? guests.map((g) =>
-              <Text key={g} fontSize="1.2rem" color="gray.200">{g}</Text>) :
-              <Text fontSize="1.1rem" color="gray.200">No guests here</Text>
-            }
+            <Text fontWeight="bold" color="white" fontSize="1.3rem" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxWidth="100%">
+              Guests
+            </Text>
+            {guests && guests.length ? (
+              guests.map((g) => (
+                <Text key={g} fontSize="1.2rem" color="gray.200" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxWidth="100%">
+                  {g}
+                </Text>
+              ))
+            ) : (
+              <Text fontSize="1.1rem" color="gray.200" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" maxWidth="100%">
+                No guests here
+              </Text>
+            )}
 
           </Flex>
 
 
-   
-            {wallet && creator != wallet.publicKey &&  !guests.includes(wallet?.publicKey.toBase58()) ? <Button colorScheme="telegram" w="100%" fontSize="1.3rem" onClick={handleJoin}>Join Chat Room</Button> : null}
+        {wallet && creator != wallet.publicKey && !guests.includes(wallet?.publicKey.toBase58()) ? <Button colorScheme="telegram" w="100%" fontSize="1.3rem" onClick={handleJoin}>Join Chat Room</Button> : null}
 
 
-        </Flex>
       </Flex>
+    </Flex >
     </>
 
   );
