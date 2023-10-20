@@ -1,84 +1,106 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Linktree } from "../target/types/linktree";
+import { Chat } from "../target/types/chat";
 import { BN } from "bn.js";
+import { Program } from "@coral-xyz/anchor";
 
-describe("Linktree", () => {
-  const accountId = 1;
-  const linkName = "website";
-  const profileLink = "bolt";
+describe("Chat", () => {
 
   anchor.setProvider(anchor.AnchorProvider.env());
   const provider = anchor.AnchorProvider.local();
 
-  const program = anchor.workspace.Linktree as anchor.Program<Linktree>;
+  const program = anchor.workspace.Etracker as Program<Chat>;
 
   const wallet = provider.wallet as anchor.Wallet;
 
-  const [linktreeAccount] = anchor.web3.PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("linktree_account"),
-      new BN(accountId).toArrayLike(Buffer, "le", 4),
-    ],
+
+  const chatroomId = 3;
+  const chatUserId = 3;
+  const message = "solana is amazing";
+  const chatUserName = "bolt";
+
+  const [chatroomAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("chatroom"), new BN(chatroomId).toArrayLike(Buffer, "le", 4)],
     program.programId
   );
 
-  const [linkAccount] = anchor.web3.PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("link_account"),
-      new BN(accountId).toArrayLike(Buffer, "le", 4),
-      Buffer.from(linkName),
-    ],
+  const [chatUserAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("chat_user"), new BN(chatUserId).toArrayLike(Buffer, "le", 4)],
     program.programId
   );
 
   console.log(
-    "Linktree Account: ",
-    linktreeAccount.toBase58(),
-    "Link Account: ",
-    linkAccount.toBase58()
+    "Chatroom Account: ",
+    chatroomAccount.toBase58(),
+    "Chat User Account: ",
+    chatUserAccount.toBase58()
   );
 
-  it("Created Linktree Account", async () => {
+  it("Created Chatroom Account", async () => {
     const txHash = await program.methods
-      .createAccount(accountId, profileLink)
+      .createChatroom(chatroomId)
       .accounts({
-        linktreeAccount,
-        authority: wallet.publicKey,
+        chatroom: chatroomAccount,
+        signer: wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
     console.log(`Signature: ${txHash}`);
   });
 
-  it("Update Linktree account", async () => {
+  it("Created Chat User", async () => {
     const txHash = await program.methods
-      .updateAccount(accountId, profileLink, "#FFFFFF")
+      .createUser(chatUserId, chatUserName)
       .accounts({
-        linktreeAccount,
-        authority: wallet.publicKey,
+        chatUser: chatUserAccount,
+        signer: wallet.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
     console.log(`Signature: ${txHash}`);
   });
 
-  it("Add link", async () => {
+  it("Joined Chat Room", async () => {
     const txHash = await program.methods
-      .addLink(accountId, linkName, "aabis.dev")
+      .joinChatroom(chatroomId, chatUserId)
       .accounts({
-        linkAccount,
-        authority: wallet.publicKey,
+        chatroom: chatroomAccount,
+        chatUser: chatUserAccount,
+        signer: wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
     console.log(`Signature: ${txHash}`);
   });
 
-  it("Remove Link", async () => {
+  it("Left Chat Room", async () => {
     const txHash = await program.methods
-      .removeLink(accountId, linkName)
+      .leaveChatroom(chatroomId, chatUserId)
       .accounts({
-        linkAccount,
-        authority: wallet.publicKey,
+        chatroom: chatroomAccount,
+        chatUser: chatUserAccount,
+        signer: wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+    console.log(`Signature: ${txHash}`);
+  });
+
+  it("Send Message", async () => {
+    const chatAccount = await program.account.chatroom.fetch(
+      chatroomAccount
+    );
+
+    let history = JSON.parse(chatAccount.chats);
+    history.push({ username: chatUserName, date: new Date(), message });
+
+    console.log(history);
+    const txHash = await program.methods
+      .sendMessage(chatroomId, chatUserId, JSON.stringify(history))
+      .accounts({
+        chatroom: chatroomAccount,
+        chatUser: chatUserAccount,
+        signer: wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
     console.log(`Signature: ${txHash}`);
