@@ -30,6 +30,7 @@ const ChatRoom: React.FC = () => {
   const handleSendMessage = async () => {
     console.log(Number(id), chatUser.id, newMessage, chatUser.name)
     const res = await sendMessage(wallet as NodeWallet, Number(id), chatUser.id, newMessage, chatUser.name)
+    setNewMessage("")
     if (res.error) {
       toast({
         status: "error",
@@ -83,7 +84,7 @@ const ChatRoom: React.FC = () => {
 
     fetchData();
 
-    const interval = setInterval(fetchData, 1000);
+    const interval = setInterval(fetchData, 600);
 
     return () => clearInterval(interval);
   }, [wallet]);

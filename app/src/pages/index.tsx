@@ -40,7 +40,7 @@ export default function Home() {
 
   const handleCreateRoom = async () => {
     const chatAccount = await fetchChatUserAccount(wallet as NodeWallet)
-    if (chatAccount.error) {
+    if (chatAccount.error || chatAccount.accounts.length == 0) {
       onOpen()
       return
     }
